@@ -3,7 +3,7 @@ weewee
 
 Wrapper Extension Engine for veewee
 
-A ruby script of generating veewee templates based on some defaults
+A ruby script for generating veewee templates based on some defaults
 
 Currently has basic functionality for Linux. Planning to add Solaris.
 
