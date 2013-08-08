@@ -26,7 +26,7 @@ Examples
 
 Generate Linux Kickstart file and review defaults:
 
-	$ /weewee.rb -l -k
+	$ weewee.rb -l -k
 	OS Type is Linux
 	Loading ./methods/definition.rb
 	Loading ./methods/kickstart.rb
