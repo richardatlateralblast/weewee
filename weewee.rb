@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 # Name:         weewee (Wrapper Extension Engine for veewee)
-# Version:      0.0.1
+# Version:      0.0.2
 # Release:      1
 # License:      Open Source
 # Group:        System

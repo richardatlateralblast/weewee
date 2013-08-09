@@ -227,8 +227,6 @@ def verify_definition(str,os_type)
       if answer != str[key].value
         str[key].value=answer 
       end
-    else
-      str[key].value=answer 
     end
   end
   return str
