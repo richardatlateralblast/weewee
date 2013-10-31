@@ -26,7 +26,7 @@ Examples
 
 Generate Linux Kickstart file and review defaults:
 
-	$ weewee.rb -l -k
+	$ weewee.rb -l -k -n HOSTNAME
 	OS Type is Linux
 	Loading ./methods/definition.rb
 	Loading ./methods/kickstart.rb
@@ -44,9 +44,13 @@ Generate Linux Kickstart file and review defaults:
 	Install Language?
 	[ en_US.UTF-8 ]
 
+Delete a definition:
+
+	$ veewee.rb -r HOSTNAME
+
 Generate Linux Kickstart file to STDOUT and accept defaults:
 
-	$ weewee.rb -l -k -D 
+	$ weewee.rb -l -k -D -n HOSTNAME
 	OS Type is Linux
 	Loading ./methods/definition.rb
 	Loading ./methods/kickstart.rb
@@ -87,11 +91,11 @@ Generate Linux Kickstart file to STDOUT and accept defaults:
 
 Generate Linux Kickstart file ks.cfg  and accept defaults:
 	
-	$ weewee.rb -l -k -D -o ks.cfg
+	$ weewee.rb -l -k -D -f -n HOSTNAME
 
 Generate Definitions file to STDOUT and accept defaults:
 
-	$ weewee.rb -l -d -D
+	$ weewee.rb -l -d -D -n HOSTNAME
 	OS Type is Linux
 	Loading ./methods/definition.rb
 	Loading ./methods/kickstart.rb
