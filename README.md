@@ -10,16 +10,25 @@ Currently has basic functionality for Linux. Planning to add Solaris.
 Usage
 =====
 
-	weewee.rb -[h|V] -[l|s] -[k|p|d] -D -o [OUTPUT]
+	$ weewee.rb -[DOdjklpsfvn:o:p:r:L]
 
-	-V:          Display version information
-	-h:          Display usage information
-	-k:          Create kickstart file (Also sets OS type to Linux)
-	-l:          Set OS to Linux
-	-p:          Create postinstall file
-	-d:          Create definitions file
-	-D:          Use defaults
-	-o: OUTPUT   Output file
+	-V: Display version information
+	-h: Display usage information
+	-k: Create kickstart file (Also sets OS type to Linux)
+	-l: Set OS to Linux
+	-s: Set OS to Solaris
+	-r: Remove definition for host
+	-n: Name of new machine to be created
+	-p: Create postinstall file
+	-d: Create definitions file
+	-D: Use defaults
+	-v: Verbose output
+	-f: Output to file rather than STDOUT
+	-L: List Veewee OS types
+	-T: List Veewee Templates
+	-p: Set OS type
+	-O: Set virtualisation platform to Virtual Box
+	-F: Set virtualisation platform to VMware Fusion
 
 Examples
 ========
