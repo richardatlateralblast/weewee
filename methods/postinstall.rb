@@ -119,32 +119,45 @@ def populate_vagrant_keys(cmd,os_type)
   return cmd
 end
 
-def populate_guest_additions(cmd,os_type)
+def populate_guest_additions(cmd,os_type,platform)
   cmd.push("")
-  cmd.push("# Install VirtualBox guest additions")
-  cmd.push("echo 'Installing VirtualBox guest additions'")
-  if os_type == "linux"
-    vagrant_home="/home/vagrant"
-    cmd.push("VBOX_VERSION=$(cat #{vagrant_home}/.vbox_version)")
-    cmd.push("cd /tmp")
-    cmd.push("wget http://download.virtualbox.org/virtualbox/$VBOX_VERSION/VBoxGuestAdditions_$VBOX_VERSION.iso")
-    cmd.push("mount -o loop VBoxGuestAdditions_$VBOX_VERSION.iso /mnt")
-    cmd.push("sh /mnt/VBoxLinuxAdditions.run")
-    cmd.push("umount /mnt")
-    cmd.push("rm VBoxGuestAdditions_$VBOX_VERSION.iso")
-  end
-  if os_type == "solaris"
-    vagrant_home="/export/home/vagrant"
-    cmd.push("VBOX_VERSION=`cat $HOME/.vbox_version`")
-    cmd.push("cd /tmp")
-    cmd.push("mkdir vboxguestmnt")
-    cmd.push("mount -F hsfs -o ro `lofiadm -a $HOME/VBoxGuestAdditions_${VBOX_VERSION}.iso` /tmp/vboxguestmnt")
-    cmd.push("cp /tmp/vboxguestmnt/VBoxSolarisAdditions.pkg /tmp/.")
-    cmd.push("pkgtrans VBoxSolarisAdditions.pkg . all")
-    cmd.push("yes|pkgadd -d . SUNWvboxguest")
-    cmd.push("umount /tmp/vboxguestmnt")
-    cmd.push("lofiadm -d /dev/lofi/1")
-    cmd.push("rm $HOME/VBoxGuestAdditions_${VBOX_VERSION}.iso")
+  if platform.match(/vbox/)
+    cmd.push("# Install VirtualBox guest additions")
+    cmd.push("echo 'Installing VirtualBox guest additions'")
+    if os_type == "linux"
+      vagrant_home="/home/vagrant"
+      cmd.push("VBOX_VERSION=$(cat #{vagrant_home}/.vbox_version)")
+      cmd.push("cd /tmp")
+      cmd.push("wget http://download.virtualbox.org/virtualbox/$VBOX_VERSION/VBoxGuestAdditions_$VBOX_VERSION.iso")
+      cmd.push("mount -o loop VBoxGuestAdditions_$VBOX_VERSION.iso /mnt")
+      cmd.push("sh /mnt/VBoxLinuxAdditions.run")
+      cmd.push("umount /mnt")
+      cmd.push("rm VBoxGuestAdditions_$VBOX_VERSION.iso")
+    end
+    if os_type == "solaris"
+      vagrant_home="/export/home/vagrant"
+      cmd.push("VBOX_VERSION=`cat $HOME/.vbox_version`")
+      cmd.push("cd /tmp")
+      cmd.push("mkdir vboxguestmnt")
+      cmd.push("mount -F hsfs -o ro `lofiadm -a $HOME/VBoxGuestAdditions_${VBOX_VERSION}.iso` /tmp/vboxguestmnt")
+      cmd.push("cp /tmp/vboxguestmnt/VBoxSolarisAdditions.pkg /tmp/.")
+      cmd.push("pkgtrans VBoxSolarisAdditions.pkg . all")
+      cmd.push("yes|pkgadd -d . SUNWvboxguest")
+      cmd.push("umount /tmp/vboxguestmnt")
+      cmd.push("lofiadm -d /dev/lofi/1")
+      cmd.push("rm $HOME/VBoxGuestAdditions_${VBOX_VERSION}.iso")
+    end
+  else
+    if os_type == "linux"
+      cmd.push("# Install VMware tools}")
+      cmd.push("cd /tmp")
+      cmd.push("mkdir -p /mnt/cdrom")
+      cmd.push("mount -o loop /home/vagrant/linux.iso /mnt/cdrom")
+      cmd.push("tar zxvf /mnt/cdrom/VMwareTools-*.tar.gz -C /tmp/")
+      cmd.push("/tmp/vmware-tools-distrib/vmware-install.pl -d")
+      cmd.push("umount /mnt/cdrom")
+      cmd.push("rm /home/vagrant/linux.iso")
+    end
   end
   return cmd
 end
@@ -223,14 +236,14 @@ def output_postinstall(cmd,output_file)
   return
 end
 
-def populate_postinstall(cmd,os_type)
+def populate_postinstall(cmd,os_type,platform)
   cmd=populate_date(cmd,os_type)
   cmd=populate_environment(cmd,os_type)
   cmd=populate_ruby(cmd,os_type)
   cmd=populate_chef(cmd,os_type)
   cmd=populate_puppet(cmd,os_type)
   cmd=populate_vagrant_keys(cmd,os_type)
-  cmd=populate_guest_additions(cmd,os_type)
+  cmd=populate_guest_additions(cmd,os_type,platform)
   cmd=populate_sudoers(cmd,os_type)
   cmd=populate_mdns(cmd,os_type)
   cmd=populate_rsyslog(cmd,os_type)
@@ -238,11 +251,11 @@ def populate_postinstall(cmd,os_type)
   cmd=populate_end(cmd,os_type)
 end
 
-def do_postinstall(config_name,output_file,output_type,os_type)
+def do_postinstall(config_name,output_file,output_type,os_type,base_dir,platform)
   if output_file
     output_file="postinstall.sh"
     if config_name
-      output_dir=$base_dir+"/"+config_name
+      output_dir=base_dir+"/"+config_name
       output_file=output_dir+"/"+output_file
       if !Dir.exists?(output_dir)
         Dir.mkdir(output_dir)
@@ -253,7 +266,7 @@ def do_postinstall(config_name,output_file,output_type,os_type)
     end
   end
   cmd=[]
-  cmd=populate_postinstall(cmd,os_type)
+  cmd=populate_postinstall(cmd,os_type,platform)
   if output_type != "default"
     cmd=verify_postinstall(cmd,os_type)
   end

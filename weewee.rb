@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 # Name:         weewee (Wrapper Extension Engine for veewee)
-# Version:      0.0.5
+# Version:      0.0.7
 # Release:      1
 # License:      Open Source
 # Group:        System
@@ -16,10 +16,14 @@ require 'getopt/std'
 require 'fileutils'
 require 'veewee'
 
+# Set some defaults
+
 default_platform="fusion"
 default_linux="CentOS-5.9-x86_64"
 default_solaris="solaris-10-ga-x86"
 $verbose=1
+$iso_store=""
+$base_dir=""
 
 # Create a structure to store kickstart/jumpstart information
 # Type determines whether it's output to the config or is used by another object
@@ -51,6 +55,7 @@ def print_usage(options)
   puts "-V: Display version information"
   puts "-h: Display usage information"
   puts "-k: Create kickstart file (Also sets OS type to Linux)"
+  puts "-W: Don't apply weewee modifications"
   puts "-l: Set OS to Linux"
   puts "-s: Set OS to Solaris"
   puts "-r: Remove definition for host"
@@ -75,7 +80,8 @@ def get_password_crypt(password)
   return password
 end
 
-options="DOdjklpsfvn:o:p:r:L"
+options="DLOWdjklpsfvn:o:p:r:"
+
 # Get command line arguments
 # Print help if given none
 
@@ -90,6 +96,25 @@ rescue
   print_usage(options)
   exit
 end
+
+if opt["h"]
+  print_usage(options)
+  exit
+end
+
+# Check local config
+
+def check_local_config()
+  iso_dir=Dir.home+"/ISOs"
+  if Dir.exists?(iso_dir)
+    $iso_store=iso_dir+"/"
+    if $verbose == 1
+      puts "Setting ISO directory to "+$iso_store
+    end
+  end
+end
+
+check_local_config()
 
 # Set up base directory
 
@@ -132,6 +157,10 @@ if opt["F"] or opt ["O"]
   end
 else
   platform=default_platform
+end
+
+if $verbose == 1
+  puts "Setting virtualisation platform to "+platform
 end
 
 if opt["L"]
@@ -215,60 +244,74 @@ if !opt["s"] and !opt["l"]
   end
 end
 
-# If given any option that requires methods, load them
-
-if opt["k"] or opt["p"] or opt["d"] or opt["j"] or opt["s"]
-  # Import methods
-  if Dir.exists?("./methods")
-    file_list=Dir.entries("./methods")
-    for file in file_list
-      if file =~/rb$/
-        if opt["v"]
-          puts "Loading ./methods/"+file
-        end
-        require "./methods/#{file}"
-      end
-    end
-  end
-end
-
-if opt["D"]
-  output_type="default"
-  if opt["v"]
-    puts "Using defaults"
+if opt["W"]
+  if $verbose == 1
+    puts "Using veewee defaults"
   end
 end
 
 # If given -k and no -s (ie not Solaris) build kickstart file
 
-if opt["k"] and !opt["s"]
-  create_file=opt["f"]
-  config_name=opt["n"]
-  do_kickstart(config_name,create_file,output_type,base_dir)
-end
-
-if opt["p"]
-  create_file=opt["f"]
-  config_name=opt["n"]
-  if !opt["l"] and !opt["s"]
-    puts "OS type not specified"
-    exit
+if !opt["W"]
+  # If given any option that requires methods, load them
+  if opt["k"] or opt["p"] or opt["d"] or opt["j"] or opt["s"]  or opt["l"]
+    # Import methods
+    if Dir.exists?("./methods")
+      file_list=Dir.entries("./methods")
+      for file in file_list
+        if file =~/rb$/
+          if $verbose == 1
+            puts "Loading ./methods/"+file
+          end
+          require "./methods/#{file}"
+        end
+      end
+    end
   end
-  do_postinstall(config_name,create_file,output_type,os_type,base_dir)
-end
-
-if opt["j"] and !opt["l"]
-  create_file=opt["f"]
-  config_name=opt["n"]
-  do_jumpstart(config_name,create_file,output_type,base_dir)
-end
-
-if opt["d"] 
-  create_file=opt["f"]
-  config_name=opt["n"]
-  if !opt["l"] and !opt["s"]
-    puts "OS type not specified"
-    exit
+  if opt["D"]
+    output_type="default"
+    if $verbose == 1
+      puts "Using defaults"
+    end
   end
-  do_definition(config_name,create_file,output_type,os_type,base_dir)
+  if opt["k"] or opt["l"] and !opt["s"]
+    create_file=opt["f"]
+    config_name=opt["n"]
+    if $verbose == 1
+      puts "Generating Kickstart file"
+    end
+    do_kickstart(config_name,create_file,output_type,base_dir)
+  end
+  if opt["p"] or opt["s"] or opt["l"]
+    create_file=opt["f"]
+    config_name=opt["n"]
+    if !opt["l"] and !opt["s"]
+      puts "OS type not specified"
+      exit
+    end
+    if $verbose == 1
+      puts "Generating Postinstall file"
+    end
+    do_postinstall(config_name,create_file,output_type,os_type,base_dir,platform)
+  end
+  if opt["j"] or opt["s"] and !opt["l"]
+    create_file=opt["f"]
+    config_name=opt["n"]
+    if $verbose == 1
+      puts "Generating Jumpstart file"
+    end
+    do_jumpstart(config_name,create_file,output_type,base_dir)
+  end
+  if opt["d"]  or opt["l"] or opt["s"]
+    create_file=opt["f"]
+    config_name=opt["n"]
+    if !opt["l"] and !opt["s"]
+      puts "OS type not specified"
+      exit
+    end
+    if $verbose == 1
+      puts "Generating Definition file"
+    end
+    do_definition(config_name,create_file,output_type,os_type,base_dir)
+  end
 end

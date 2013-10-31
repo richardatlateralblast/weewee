@@ -11,3 +11,5 @@
 # Cleaned up code and added capability to delete definitions
 # 0.0.6 Thu 31 Oct 2013 11:31:49 EST
 # Fixed command line arguement handling
+# 0.0.7 Thu 31 Oct 2013 15:52:29 EST
+# Added support for using veewee defaults

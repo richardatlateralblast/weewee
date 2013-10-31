@@ -117,13 +117,13 @@ def populate_iso_definition(str,os_type)
   if os_type == "linux"
     cfg=Dfn.new(
       question  = "ISO File",
-      value     = "CentOS-5.9-x86_64-bin-DVD-1of2.iso"
+      value     = "#{$iso_store}CentOS-5.9-x86_64-bin-DVD-1of2.iso"
       )
   end
   if os_type == "solaris"
     cfg=Dfn.new(
       question  = "ISO File",
-      value     = "sol-10-u11-ga-x86-dvd.iso"
+      value     = "#{$iso_store}sol-10-u11-ga-x86-dvd.iso"
       )
   end
   str["iso_src"]=cfg
@@ -263,11 +263,11 @@ def verify_definition(str,os_type)
   return str
 end
 
-def do_definition(config_name,output_file,output_type,os_type)
+def do_definition(config_name,output_file,output_type,os_type,base_dir)
   if output_file
     output_file="definition.rb"
     if config_name
-      output_dir=$base_dir+"/"+config_name
+      output_dir=base_dir+"/"+config_name
       output_file=output_dir+"/"+output_file
       if !Dir.exists?(output_dir)
         Dir.mkdir(output_dir)
