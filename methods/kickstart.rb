@@ -572,3 +572,41 @@ def output_kickstart_post(cmd,output_file)
   end
   return
 end
+
+def do_kickstart(config_name,output_file,output_type,base_dir)
+  if output_file
+    output_file="ks.cfg"
+    if config_name
+      output_dir=base_dir+"/"+config_name
+      output_file=output_dir+"/"+output_file
+      if !Dir.exists?(output_dir)
+        Dir.mkdir(output_dir)
+      end
+    end
+    if File.exists?(output_file)
+      File.delete(output_file)
+    end
+  end
+  str=Hash.new
+  pkg=[]
+  cmd=[]
+  str=populate_kickstart_header(str)
+  if output_type != "default"
+    str=verify_kickstart_header(str)
+  end
+  pkg=populate_kickstart_packages(pkg)
+  if output_type != "default"
+    pkg=verify_kickstart_array(pkg)
+  end
+  cmd=populate_kickstart_post(cmd)
+  if output_type != "default"
+    cmd=verify_kickstart_array(cmd)
+  end
+  output_kickstart_header(str,output_file)
+  output_kickstart_packages(pkg,output_file)
+  output_kickstart_post(cmd,output_file)
+  if output_file
+    FileUtils.chmod(0755,output_file)
+  end 
+  return
+end

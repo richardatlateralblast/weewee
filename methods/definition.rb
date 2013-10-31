@@ -1,19 +1,4 @@
 
-def populate_definition(str,os_type)
-  str=populate_system_definition(str,os_type)
-  str=populate_os_definition(str,os_type)
-  str=populate_boot_definition(str,os_type)
-  str=populate_iso_definition(str,os_type)
-  if os_type == "linux"
-    str=populate_linux_definition(str,os_type)
-  end
-  str=populate_ssh_definition(str,os_type)
-  str=populate_sudo_definition(str,os_type)
-  str=populate_shutdown_definition(str,os_type)
-  str=populate_postinstall_definition(str,os_type)
-  return str
-end
-
 def populate_postinstall_definition(str,os_type)
   cfg=Dfn.new(
     question  = "Postinstall Files",
@@ -53,15 +38,31 @@ def populate_system_definition(str,os_type)
     value     = "1"
     )
   str["cpu_count"]=cfg
-  cfg=Dfn.new(
-    question  = "Memory size",
-    value     = "384"
-    )
+  if os_type == "linux"
+    cfg=Dfn.new(
+      question  = "Memory size",
+      value     = "384"
+      )
+  end
+  if os_type == "solaris"
+    cfg=Dfn.new(
+      question  = "Memory size",
+      value     = "768"
+      )
+  end
   str["memory_size"]=cfg
-  cfg=Dfn.new(
-    question  = "Disk size",
-    value     = "10240"
-    )
+  if os_type == "linux"
+    cfg=Dfn.new(
+      question  = "Disk size",
+      value     = "10140"
+      )
+  end
+  if os_type == "solaris"
+    cfg=Dfn.new(
+      question  = "Disk size",
+      value     = "65140"
+      )
+  end
   str["disk_size"]=cfg
   cfg=Dfn.new(
     question  = "Disk format",
@@ -92,8 +93,14 @@ def populate_os_definition(str,os_type)
       question  = "OS type ID",
       value     = "RedHat_64"
       )
-    str["os_type_id"]=cfg
   end
+  if os_type == "solaris"
+    cfg=Dfn.new(
+      question  = "OS type ID",
+      value     = "Solaris_64"
+      )
+  end
+  str["os_type_id"]=cfg
   return str
 end
 
@@ -107,10 +114,18 @@ def populate_boot_definition(str,os_type)
 end
 
 def populate_iso_definition(str,os_type)
-  cfg=Dfn.new(
-    question  = "ISO File",
-    value     = "CentOS-5.9-x86_64-bin-DVD-1of2.iso"
-    )
+  if os_type == "linux"
+    cfg=Dfn.new(
+      question  = "ISO File",
+      value     = "CentOS-5.9-x86_64-bin-DVD-1of2.iso"
+      )
+  end
+  if os_type == "solaris"
+    cfg=Dfn.new(
+      question  = "ISO File",
+      value     = "sol-10-u11-ga-x86-dvd.iso"
+      )
+  end
   str["iso_src"]=cfg
   cfg=Dfn.new(
     question  = "ISO MD5",
@@ -126,11 +141,27 @@ def populate_iso_definition(str,os_type)
 end
 
 def populate_linux_definition(str,os_type)
-  cfg=Dfn.new(
-    question  = "Boot command sequence",
-    value     = "[ 'linux text ks=http://%IP%:%PORT%/ks.cfg<Enter>' ]"
-    )
+  if os_type == "linux"
+    cfg=Dfn.new(
+      question  = "Boot command sequence",
+      value     = "[ 'linux text ks=http://%IP%:%PORT%/ks.cfg<Enter>' ]"
+      )
+  end
+  if os_type == "solaris"
+    cfg=Dfn.new(
+      question  = "Boot command sequence",
+      value     = "[ 'e', 'e', '<Backspace>'*22, '- nowin install -B install_media=cdrom<Enter>', 'b', ]" 
+      )
+  end
   str["boot_cmd_sequence"]=cfg
+  if os_type == "solaris"
+    cfg=Dfn.new(
+      question  = "Floppy files",
+      value     = "[ 'jumpstart/sysidcfg', 'jumpstart/rules', 'jumpstart/rules.ok',
+                     'jumpstart/begin', 'jumpstart/profile', 'jumpstart/finish' ]"
+      )
+    str["floppy_file"]=cfg
+  end
   cfg=Dfn.new(
     question  = "Kickstart port",
     value     = "7122"
@@ -229,5 +260,45 @@ def verify_definition(str,os_type)
       end
     end
   end
+  return str
+end
+
+def do_definition(config_name,output_file,output_type,os_type)
+  if output_file
+    output_file="definition.rb"
+    if config_name
+      output_dir=$base_dir+"/"+config_name
+      output_file=output_dir+"/"+output_file
+      if !Dir.exists?(output_dir)
+        Dir.mkdir(output_dir)
+      end
+    end
+    if File.exists?(output_file)
+      File.delete(output_file)
+    end
+  end
+  str=Hash.new
+  str=populate_definition(str,os_type)
+  if output_type != "default"
+    str=verify_definition(str,os_type)
+  end
+  output_definition(str,output_file)
+  if output_file
+    FileUtils.chmod(0755,output_file)
+  end
+end
+
+def populate_definition(str,os_type)
+  str=populate_system_definition(str,os_type)
+  str=populate_os_definition(str,os_type)
+  str=populate_boot_definition(str,os_type)
+  str=populate_iso_definition(str,os_type)
+  if os_type == "linux"
+    str=populate_linux_definition(str,os_type)
+  end
+  str=populate_ssh_definition(str,os_type)
+  str=populate_sudo_definition(str,os_type)
+  str=populate_shutdown_definition(str,os_type)
+  str=populate_postinstall_definition(str,os_type)
   return str
 end
