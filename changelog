@@ -9,3 +9,5 @@
 # Improved Linux and Solaris support
 # 0.0.5 Thu 31 Oct 2013 11:19:23 EST
 # Cleaned up code and added capability to delete definitions
+# 0.0.6 Thu 31 Oct 2013 11:31:49 EST
+# Fixed command line arguement handling

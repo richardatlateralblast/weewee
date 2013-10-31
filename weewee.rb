@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 # Name:         weewee (Wrapper Extension Engine for veewee)
-# Version:      0.0.7
+# Version:      0.0.5
 # Release:      1
 # License:      Open Source
 # Group:        System
@@ -42,11 +42,11 @@ def print_version()
   puts version
 end
 
-def print_usage()
+def print_usage(options)
   puts
   print_version()
   puts
-  puts "Usage: "+$0+" -[h|V] -[O|l|s] -[k|p|d] -D -o -c [CONFIG] -n [NAME]"
+  puts "Usage: "+$0+" -["+options+"]"
   puts
   puts "-V: Display version information"
   puts "-h: Display usage information"
@@ -75,10 +75,19 @@ def get_password_crypt(password)
   return password
 end
 
+options="DOdjklpsfvn:o:p:r:L"
+# Get command line arguments
+# Print help if given none
+
+if !ARGV[0]
+  print_usage(options)
+  exit
+end
+
 begin
-  opt=Getopt::Std.getopts("DOdjklpsfvn:o:p:r:L")
+  opt=Getopt::Std.getopts(options)
 rescue
-  print_usage()
+  print_usage(options)
   exit
 end
 
